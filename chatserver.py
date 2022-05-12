@@ -2,6 +2,7 @@
 
 import socket
 import threading
+import re
 
 #connection
 host = '127.0.0.1'
@@ -17,6 +18,24 @@ server.listen()
 clients = []
 nicknames = []
 
+#room list
+rooms = []
+
+#command functions
+def createRoom():
+	rooms.append(len(rooms))
+	print('Created room', rooms)
+
+
+def listRooms():
+	print('Rooms:')
+
+#command list
+commands = {
+	'create room': createRoom, 
+	'list rooms': listRooms
+	}
+
 #send message to all connected clients
 def broadcast(message):
 	for client in clients:
@@ -27,7 +46,17 @@ def handle(client):
 	while True:
 		try:
 			message = client.recv(1024)
-			broadcast(message)
+
+			#check if order is one of the commands
+			order = message.decode('ascii')
+			#get first 2 words in text
+			check = re.search("\w+ \w+", order)
+			if check:
+				check = check.group()
+				if check in commands:
+					commands[check]()
+			else:
+				broadcast(message)
 		except:
 			index = clients.index(client)
 			clients.remove(client)
