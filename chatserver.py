@@ -1,4 +1,4 @@
-# https://www.neuralnine.com/tcp-chat-in-python/
+#  used this for the first commit to get started https://www.neuralnine.com/tcp-chat-in-python/
 
 import socket
 import threading
@@ -19,16 +19,24 @@ clients = []
 nicknames = []
 
 #room list
-rooms = []
+rooms = {}
 
 #command functions
-def createRoom():
-	rooms.append(len(rooms))
-	print('Created room', rooms)
+def createRoom(name, client):
+	if name in rooms:
+		client.send("Room already exists".encode('ascii'))
+	else:
+		rooms[name] = client
+		client.send("Created room {}".format(name).encode('ascii'))
 
 
-def listRooms():
-	print('Rooms:')
+def listRooms(cat, client):
+	if len(rooms) == 0:
+		client.send('There are no rooms'.encode('ascii'))
+		return
+	for room in rooms:
+		name = room.encode('ascii')
+		client.send(name)
 
 #command list
 commands = {
@@ -41,6 +49,14 @@ def broadcast(message):
 	for client in clients:
 		client.send(message)
 
+#send message to all but 1 client
+def sending(message, sender):
+	for client in clients:
+		if client != sender:
+			client.send(message)
+		else:
+			client.send('Message sent'.encode('ascii'))
+
 #checking for client messages and removing them
 def handle(client):
 	while True:
@@ -50,13 +66,20 @@ def handle(client):
 			#check if order is one of the commands
 			order = message.decode('ascii')
 			#get first 2 words in text
-			check = re.search("\w+ \w+", order)
+			check = re.search(r'\w+ \w+ \w+', order)
+			#if there is a formatted command
 			if check:
 				check = check.group()
-				if check in commands:
-					commands[check]()
+				args = check.split()
+				func = args[0] + ' ' + args[1]
+				#if it is a valid command
+				if func in commands:
+					#call the appropiate function
+					commands[func](args[2], client)
+				else:
+					sending(message, client)
 			else:
-				broadcast(message)
+				sending(message, client)
 		except:
 			index = clients.index(client)
 			clients.remove(client)
@@ -82,7 +105,7 @@ def receive():
 		#broadcast name
 		print("Name is {}".format(name))
 		broadcast("{} joined.".format(name).encode('ascii'))
-		client.send('Connected to server'.encode('ascii'))
+		client.send('\nConnected to server'.encode('ascii'))
 
 		thread = threading.Thread(target=handle, args=(client,))
 		thread.start()

@@ -23,7 +23,8 @@ def receive():
 
 def write():
 	while True:
-		message = '{}: {}'.format(name, input(''))
+		message = input('You: ')
+		message = name + ': ' + message
 		client.send(message.encode('ascii'))
 
 receiveThread = threading.Thread(target=receive)
