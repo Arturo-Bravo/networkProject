@@ -15,7 +15,7 @@ def receive():
 			if message == 'namereq':
 				client.send(name.encode('ascii'))
 			else:
-				print(message)
+				print(message, "\n")
 		except:
 			print("An error occured.")
 			client.close()
@@ -23,7 +23,7 @@ def receive():
 
 def write():
 	while True:
-		message = input('You: ')
+		message = input('')
 		message = name + ': ' + message
 		client.send(message.encode('ascii'))
 

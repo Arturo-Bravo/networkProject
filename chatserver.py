@@ -23,14 +23,17 @@ rooms = {}
 
 #command functions
 def createRoom(name, client):
-	if name in rooms:
+	if len(name) == 0:
+		client.send('You need to include a room name'.encode('ascii'))
+	elif name in rooms:
 		client.send("Room already exists".encode('ascii'))
 	else:
-		rooms[name] = client
+		rooms[name] = []
+		rooms[name].append(client)
 		client.send("Created room {}".format(name).encode('ascii'))
 
-
-def listRooms(cat, client):
+#no argument commands
+def listRooms(client):
 	if len(rooms) == 0:
 		client.send('There are no rooms'.encode('ascii'))
 		return
@@ -38,11 +41,20 @@ def listRooms(cat, client):
 		name = room.encode('ascii')
 		client.send(name)
 
+def help(client):
+	client.send('create room (room name) --creates a room with a room name'.encode('ascii'))
+	client.send('list rooms --lists all rooms'.encode('ascii'))
+
+
 #command list
 commands = {
 	'create room': createRoom, 
+}
+
+#no argument commands
+singleCommands = {
 	'list rooms': listRooms
-	}
+}
 
 #send message to all connected clients
 def broadcast(message):
@@ -65,8 +77,10 @@ def handle(client):
 
 			#check if order is one of the commands
 			order = message.decode('ascii')
-			#get first 2 words in text
+			#get first 3 words in text
 			check = re.search(r'\w+ \w+ \w+', order)
+			#get first 2 words
+			single = re.search(r'\w+ \w+', order)
 			#if there is a formatted command
 			if check:
 				check = check.group()
@@ -76,6 +90,16 @@ def handle(client):
 				if func in commands:
 					#call the appropiate function
 					commands[func](args[2], client)
+				else:
+					sending(message, client)
+			#check for single commands
+			elif single:
+				single = single.group()
+				if single in singleCommands:
+					singleCommands[single](client)
+				#if command is being called incorrectly let the command handle the error message
+				elif single in commands:
+					commands[single]("", client)
 				else:
 					sending(message, client)
 			else:
