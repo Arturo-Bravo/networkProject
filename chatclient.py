@@ -15,12 +15,13 @@ def receive():
 			if message == 'namereq':
 				client.send(name.encode('ascii'))
 			else:
-				print(message, "\n")
+				print("\n",message, "\n")
 		except:
 			print("An error occured.")
 			client.close()
 			break
 
+#send messages to server
 def write():
 	while True:
 		message = input('')

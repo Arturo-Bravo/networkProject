@@ -32,6 +32,22 @@ def createRoom(name, client):
 		rooms[name].append(client)
 		client.send("Created room {}".format(name).encode('ascii'))
 
+def joinRoom(name, client):
+	if len(name) == 0:
+		client.send('You need to include a room name'.encode('ascii'))
+		return
+	#room does not exist
+	if name not in rooms:
+		client.send('Room does not exist'.encode('ascii'))
+		return
+	#if attempting to join a room you already are in
+	if client in rooms[name]:
+		client.send('You are already in this room.'.encode('ascii'))
+		return
+	rooms[name].append(client)
+	client.send("Joined room {}".format(name).encode('ascii'))
+	
+
 #no argument commands
 def listRooms(client):
 	if len(rooms) == 0:
@@ -48,7 +64,8 @@ def help(client):
 
 #command list
 commands = {
-	'create room': createRoom, 
+	'create room': createRoom,
+	'join room': joinRoom
 }
 
 #no argument commands
