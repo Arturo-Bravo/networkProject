@@ -46,6 +46,22 @@ def joinRoom(name, client):
 		return
 	rooms[name].append(client)
 	client.send("Joined room {}".format(name).encode('ascii'))
+
+def leaveRoom(name, client):
+	if len(name) == 0:
+		client.send('You need to include a room name'.encode('ascii'))
+		return
+	#room does not exist
+	if name not in rooms:
+		client.send('Room does not exist'.encode('ascii'))
+		return
+	#if attempting to leave a room you are not in
+	if client not in rooms[name]:
+		client.send('You are not in this room.'.encode('ascii'))
+		return
+	rooms[name].remove(client)
+	print(client)
+	client.send("Left room {}".format(name).encode('ascii'))
 	
 
 #no argument commands
@@ -65,7 +81,8 @@ def help(client):
 #command list
 commands = {
 	'create room': createRoom,
-	'join room': joinRoom
+	'join room': joinRoom,
+	'leave room': leaveRoom
 }
 
 #no argument commands
