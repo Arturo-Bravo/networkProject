@@ -9,11 +9,18 @@ client.connect(('127.0.0.1', 8080))
 
 #listening to server and sending username
 def receive():
+	global name
 	while True:
 		try:
 			message = client.recv(1024).decode('ascii')
 			if message == 'namereq':
 				client.send(name.encode('ascii'))
+			elif message == 'nameset':
+				client.send('nothing'.encode('ascii'))
+				message = client.recv(1024).decode('ascii')
+				name = message
+				print("Your name ", name)
+				continue
 			else:
 				print("\n",message, "\n")
 		except:

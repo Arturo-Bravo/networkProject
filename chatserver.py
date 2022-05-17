@@ -18,6 +18,9 @@ server.listen()
 clients = []
 nicknames = []
 
+joined = {}
+names = {}
+
 #room list
 rooms = {}
 
@@ -141,6 +144,14 @@ def handle(client):
 		except:
 			index = clients.index(client)
 			clients.remove(client)
+
+			toDel = client
+			for k,v in joined.items():
+				if v == client:
+					toDel = k
+					
+			del joined[toDel]
+
 			client.close()
 			nickname = nicknames[index]
 			broadcast("{} left.".format(nickname).encode('ascii'))
@@ -159,6 +170,22 @@ def receive():
 		name = client.recv(1024).decode('ascii')
 		nicknames.append(name)
 		clients.append(client)
+
+		toAdd = 0
+		if name in joined:
+			if name in names:
+				names[name] = names[name] + 1
+				toAdd = names[name]
+			else:
+				names[name] = 0
+			name = name+str(toAdd)
+			client.send('nameset'.encode('ascii'))
+			blank = client.recv(1024).decode('ascii')
+			client.send(name.encode('ascii'))
+
+		joined[name] = client
+
+		print(joined)
 
 		#broadcast name
 		print("Name is {}".format(name))
