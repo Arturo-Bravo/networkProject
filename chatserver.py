@@ -19,6 +19,7 @@ clients = []
 nicknames = []
 
 joined = {}
+joinedFlipped = {}
 names = {}
 
 #room list
@@ -35,6 +36,7 @@ def createRoom(name, client):
 		rooms[name].append(client)
 		client.send("Created room {}".format(name).encode('ascii'))
 
+
 def joinRoom(name, client):
 	if len(name) == 0:
 		client.send('You need to include a room name'.encode('ascii'))
@@ -49,6 +51,26 @@ def joinRoom(name, client):
 		return
 	rooms[name].append(client)
 	client.send("Joined room {}".format(name).encode('ascii'))
+
+#list members in a room
+def listMembers(room, client):
+	if len(room) == 0:
+		client.send('You need to include a room name'.encode('ascii'))
+		return
+	#room does not exist
+	if room not in rooms:
+		client.send('Room does not exist'.encode('ascii'))
+		return
+
+	client.send(f"{room} members:\n".encode('ascii'))
+	count = 0
+	for user in rooms[room]:
+		count+=1
+		member = joinedFlipped[user]
+		client.send(f"{member}\n".encode('ascii'))
+	client.send(f"Total members: {count}".encode('ascii'))
+
+	
 
 def leaveRoom(name, client):
 	if len(name) == 0:
@@ -85,12 +107,14 @@ def help(client):
 commands = {
 	'create room': createRoom,
 	'join room': joinRoom,
-	'leave room': leaveRoom
+	'leave room': leaveRoom,
+	'list members': listMembers
 }
 
 #no argument commands
 singleCommands = {
-	'list rooms': listRooms
+	'list rooms': listRooms,
+	'server help': help
 }
 
 #send message to all connected clients
@@ -183,7 +207,10 @@ def receive():
 			blank = client.recv(1024).decode('ascii')
 			client.send(name.encode('ascii'))
 
+		#fast access by name
 		joined[name] = client
+		#fast access by client
+		joinedFlipped[client] = name
 
 		print(joined)
 
