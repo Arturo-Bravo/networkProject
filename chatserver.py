@@ -18,7 +18,9 @@ server.listen()
 clients = []
 nicknames = []
 
+#fast access by name
 joined = {}
+#access by client
 joinedFlipped = {}
 names = {}
 
@@ -70,8 +72,7 @@ def listMembers(room, client):
 		client.send(f"{member}\n".encode('ascii'))
 	client.send(f"Total members: {count}".encode('ascii'))
 
-	
-
+#leave a room
 def leaveRoom(name, client):
 	if len(name) == 0:
 		client.send('You need to include a room name'.encode('ascii'))
@@ -88,7 +89,23 @@ def leaveRoom(name, client):
 	print(client)
 	client.send("Left room {}".format(name).encode('ascii'))
 	
+#send a message to a specific room
+#special case command
+def sendRoom(room, message, client):
+	if len(room) == 0:
+		client.send('You need to include a room name'.encode('ascii'))
+		return
+	#room does not exist
+	if room not in rooms:
+		client.send('Room does not exist'.encode('ascii'))
+		return
 
+	message = room + ':' + message
+	for people in rooms[room]:
+		if people != client:
+			people.send(message.encode('ascii'))
+
+######################################
 #no argument commands
 def listRooms(client):
 	if len(rooms) == 0:
@@ -99,8 +116,12 @@ def listRooms(client):
 		client.send(name)
 
 def help(client):
-	client.send('create room (room name) --creates a room with a room name'.encode('ascii'))
-	client.send('list rooms --lists all rooms'.encode('ascii'))
+	client.send('server help --list commands\n\n'.encode('ascii'))
+	client.send('create room (room name) --creates a room with a room name\n\n'.encode('ascii'))
+	client.send('list rooms --lists all rooms\n\n'.encode('ascii'))
+	client.send('join room (room name) --join room\n\n'.encode('ascii'))
+	client.send('leave room (room name) --leave room\n\n'.encode('ascii'))
+	client.send('list members (room name) --list members of a certain room\n\n'.encode('ascii'))
 
 
 #command list
@@ -138,6 +159,19 @@ def handle(client):
 
 			#check if order is one of the commands
 			order = message.decode('ascii')
+
+			#special case command
+			special = re.search(r'\w+ \w+ ".*"', order)
+			if special:
+				special = special.group()
+				args = special.split()
+				msg = re.search(r'".*"', special)
+				msg = msg.group()
+				if args[0] == 'send':
+					sendRoom(args[1], msg, client)
+					continue
+
+
 			#get first 3 words in text
 			check = re.search(r'\w+ \w+ \w+', order)
 			#get first 2 words
@@ -170,11 +204,10 @@ def handle(client):
 			clients.remove(client)
 
 			toDel = client
-			for k,v in joined.items():
-				if v == client:
-					toDel = k
-					
-			del joined[toDel]
+
+			nameToRemove = joinedFlipped[client]
+			del joined[nameToRemove]
+			del joinedFlipped[client]
 
 			client.close()
 			nickname = nicknames[index]
@@ -218,6 +251,7 @@ def receive():
 		print("Name is {}".format(name))
 		broadcast("{} joined.".format(name).encode('ascii'))
 		client.send('\nConnected to server'.encode('ascii'))
+		client.send('\nFor a list of commands enter: server help\n'.encode('ascii'))
 
 		thread = threading.Thread(target=handle, args=(client,))
 		thread.start()
