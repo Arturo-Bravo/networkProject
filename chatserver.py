@@ -25,6 +25,8 @@ joinedFlipped = {}
 names = {}
 
 #room list
+#rooms are a dictionary of lists
+# {roomname: [(client1),(client2)], room2:[(client2)]}
 rooms = {}
 
 #command functions
@@ -100,11 +102,28 @@ def sendRoom(room, message, client):
 		client.send('Room does not exist'.encode('ascii'))
 		return
 
+	if client not in rooms[room]:
+		client.send('You are not in this room.\n'.encode('ascii'))
+		return
+
+
 	message = room + ':' + message
 	for people in rooms[room]:
 		if people != client:
 			people.send(message.encode('ascii'))
 
+#join multiple rooms
+def joinMultiple(roomlist, client):
+	roomlist = roomlist.split(',')
+	for room in roomlist:
+		if room in rooms:
+			if client in rooms[room]:
+				client.send(f'you are already in this room. {room}\n'.encode('ascii'))
+			else:
+				rooms[room].append(client)
+				client.send(f'Joined room: {room}\n'.encode('ascii'))
+
+	return
 ######################################
 #no argument commands
 def listRooms(client):
@@ -122,6 +141,7 @@ def help(client):
 	client.send('join room (room name) --join room\n\n'.encode('ascii'))
 	client.send('leave room (room name) --leave room\n\n'.encode('ascii'))
 	client.send('list members (room name) --list members of a certain room\n\n'.encode('ascii'))
+	client.send('send (room name) "message" --list members of a certain room\n\n'.encode('ascii'))
 
 
 #command list
@@ -160,7 +180,7 @@ def handle(client):
 			#check if order is one of the commands
 			order = message.decode('ascii')
 
-			#special case command
+			#special case commands
 			special = re.search(r'\w+ \w+ ".*"', order)
 			if special:
 				special = special.group()
@@ -170,6 +190,14 @@ def handle(client):
 				if args[0] == 'send':
 					sendRoom(args[1], msg, client)
 					continue
+
+			joinM = re.search(r'join multiple (\w+,?)*', order)
+			if joinM:
+				joinM = joinM.group()
+				args = re.search(r'(\w+,?)*', joinM)
+				args = args.group()
+				joinMultiple(args, client)
+				continue
 
 
 			#get first 3 words in text
