@@ -15,7 +15,6 @@ server.bind((host, port))
 server.listen()
 
 #client list
-clients = []
 nicknames = []
 
 #fast access by name
@@ -160,12 +159,12 @@ singleCommands = {
 
 #send message to all connected clients
 def broadcast(message):
-	for client in clients:
+	for client in joinedFlipped:
 		client.send(message)
 
 #send message to all but 1 client
 def sending(message, sender):
-	for client in clients:
+	for client in joinedFlipped:
 		if client != sender:
 			client.send(message)
 		else:
@@ -228,19 +227,18 @@ def handle(client):
 			else:
 				sending(message, client)
 		except:
-			index = clients.index(client)
-			clients.remove(client)
 
 			toDel = client
 
 			nameToRemove = joinedFlipped[client]
+			for room in rooms:
+				if client in rooms[room]:
+					rooms[room].remove(client)
 			del joined[nameToRemove]
 			del joinedFlipped[client]
 
 			client.close()
-			nickname = nicknames[index]
-			broadcast("{} left.".format(nickname).encode('ascii'))
-			nicknames.remove(nickname)
+			broadcast("{} left.".format(nameToRemove).encode('ascii'))
 			break
 
 
@@ -253,8 +251,6 @@ def receive():
 		#request and store name
 		client.send("namereq".encode('ascii'))
 		name = client.recv(1024).decode('ascii')
-		nicknames.append(name)
-		clients.append(client)
 
 		toAdd = 0
 		if name in joined:
