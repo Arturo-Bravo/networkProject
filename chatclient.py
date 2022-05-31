@@ -16,6 +16,7 @@ def receive():
 			if message == 'namereq':
 				client.send(name.encode('ascii'))
 			elif message == 'nameset':
+				#send to clear the socket or something, this works
 				client.send('nothing'.encode('ascii'))
 				message = client.recv(1024).decode('ascii')
 				name = message

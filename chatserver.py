@@ -1,5 +1,3 @@
-#  used this for the first commit to get started https://www.neuralnine.com/tcp-chat-in-python/
-
 import socket
 import threading
 import re
@@ -121,6 +119,14 @@ def joinMultiple(roomlist, client):
 			else:
 				rooms[room].append(client)
 				client.send(f'Joined room: {room}\n'.encode('ascii'))
+		else:
+			client.send(f'{room} is not a room.\n'.encode('ascii'))
+		
+
+	return
+
+
+def sendMultiple(roomlist, message, client):
 
 	return
 ######################################
@@ -190,13 +196,24 @@ def handle(client):
 					sendRoom(args[1], msg, client)
 					continue
 
+			#join multiple rooms
 			joinM = re.search(r'join multiple (\w+,?)*', order)
 			if joinM:
 				joinM = joinM.group()
-				args = re.search(r'(\w+,?)*', joinM)
-				args = args.group()
+				args = joinM.split(' ', 2)[2]
 				joinMultiple(args, client)
 				continue
+
+			sendM = re.search(r'send multiple (\w+,?)* ".*"', order)
+			if sendM:
+				sendM = sendM.group()
+				msg = re.search(r'".*"', sendM)
+				#extract the rooms
+				sendM = re.sub(r'".*"', '', sendM)
+				locations = sendM.split(' ', 2)[2]
+				sendMultiple(locations, msg, client)
+				continue
+				
 
 
 			#get first 3 words in text
@@ -254,6 +271,7 @@ def receive():
 
 		toAdd = 0
 		if name in joined:
+			#if name is taken set clients name to chosen name and an increase of integer
 			if name in names:
 				names[name] = names[name] + 1
 				toAdd = names[name]
@@ -261,6 +279,7 @@ def receive():
 				names[name] = 0
 			name = name+str(toAdd)
 			client.send('nameset'.encode('ascii'))
+			#need to receive a message to send again to set the name
 			blank = client.recv(1024).decode('ascii')
 			client.send(name.encode('ascii'))
 
