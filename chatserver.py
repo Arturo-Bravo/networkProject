@@ -103,8 +103,8 @@ def sendRoom(room, message, client):
 		client.send('You are not in this room.\n'.encode('ascii'))
 		return
 
-
-	message = room + ':' + message
+	clientName = joinedFlipped[client]
+	message = clientName+ ' to ' + room + ':' + message
 	for people in rooms[room]:
 		if people != client:
 			people.send(message.encode('ascii'))
@@ -127,6 +127,16 @@ def joinMultiple(roomlist, client):
 
 
 def sendMultiple(roomlist, message, client):
+	roomlist = roomlist.split(',')
+	print(roomlist)
+	for room in roomlist:
+		if room in rooms:
+			if client in rooms[room]:
+				sendRoom(room, message, client)
+			else:
+				client.send(f'You are not in this room: {room}\n'.encode('ascii'))
+		else:
+			client.send(f'{room} is not a room.\n'.encode('ascii'))
 
 	return
 ######################################
@@ -203,7 +213,7 @@ def handle(client):
 				args = joinM.split(' ', 2)[2]
 				joinMultiple(args, client)
 				continue
-
+			#send a message to multiple rooms
 			sendM = re.search(r'send multiple (\w+,?)* ".*"', order)
 			if sendM:
 				sendM = sendM.group()
@@ -214,8 +224,6 @@ def handle(client):
 				sendMultiple(locations, msg, client)
 				continue
 				
-
-
 			#get first 3 words in text
 			check = re.search(r'\w+ \w+ \w+', order)
 			#get first 2 words
@@ -248,6 +256,7 @@ def handle(client):
 			toDel = client
 
 			nameToRemove = joinedFlipped[client]
+			#remove client from all rooms
 			for room in rooms:
 				if client in rooms[room]:
 					rooms[room].remove(client)
