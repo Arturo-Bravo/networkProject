@@ -127,8 +127,8 @@ def joinMultiple(roomlist, client):
 
 
 def sendMultiple(roomlist, message, client):
+	roomlist = roomlist.strip()
 	roomlist = roomlist.split(',')
-	print(roomlist)
 	for room in roomlist:
 		if room in rooms:
 			if client in rooms[room]:
@@ -218,6 +218,7 @@ def handle(client):
 			if sendM:
 				sendM = sendM.group()
 				msg = re.search(r'".*"', sendM)
+				msg = msg.group()
 				#extract the rooms
 				sendM = re.sub(r'".*"', '', sendM)
 				locations = sendM.split(' ', 2)[2]
