@@ -100,6 +100,11 @@ def sendRoom(room, message, client):
 	if client not in rooms[room]:
 		client.send('You are not in this room.\n'.encode('ascii'))
 		return
+	
+	#check if client is the only one in the room
+	if len(rooms[room]):
+		client.send(f'{room} is empty\n'.encode('ascii'))
+		return
 
 	clientName = joinedFlipped[client]
 	message = clientName+ ' to ' + room + ':' + message
@@ -253,9 +258,6 @@ def handle(client):
 			else:
 				sending(message, client)
 		except:
-
-			toDel = client
-
 			nameToRemove = joinedFlipped[client]
 			#remove client from all rooms
 			for room in rooms:

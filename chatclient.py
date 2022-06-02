@@ -23,7 +23,7 @@ def receive():
 				print("Your name ", name)
 				continue
 			else:
-				print(message, "\n")
+				print(message)
 		except:
 			print("An error occured.")
 			client.close()
