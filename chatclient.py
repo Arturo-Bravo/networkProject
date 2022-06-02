@@ -12,13 +12,13 @@ def receive():
 	global name
 	while True:
 		try:
-			message = client.recv(1024).decode('ascii')
+			message = client.recv(1024).decode()
 			if message == 'namereq':
-				client.send(name.encode('ascii'))
+				client.send(name.encode())
 			elif message == 'nameset':
 				#send to clear the socket or something, this works
-				client.send('nothing'.encode('ascii'))
-				message = client.recv(1024).decode('ascii')
+				client.send('nothing'.encode())
+				message = client.recv(1024).decode()
 				name = message
 				print("Your name ", name)
 				continue
@@ -34,7 +34,7 @@ def write():
 	while True:
 		message = input('')
 		message = name + ': ' + message
-		client.send(message.encode('ascii'))
+		client.send(message.encode())
 
 receiveThread = threading.Thread(target=receive)
 receiveThread.start()
