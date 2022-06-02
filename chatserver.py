@@ -114,6 +114,27 @@ def sendRoom(room, message, client):
 		if people != client:
 			people.send(message.encode())
 
+def privateMsg(friend, message, client):
+	if len(friend) == 0:
+		client.send('You need to include a username\n'.encode())
+		return
+
+	if friend not in joined:
+		client.send('Username does not exist\n'.encode())
+		return
+
+	receiver = joined[friend]
+	sender = joinedFlipped[client]
+	message = sender + " to you: " + message
+
+	if receiver != client:
+		receiver.send(message.encode())
+		return
+
+	#client tried to send a message to itself
+	broadcast(f"{sender} is lonely.".encode())
+	return
+
 #join multiple rooms
 def joinMultiple(roomlist, client):
 	roomlist = roomlist.split(',')
@@ -162,8 +183,9 @@ def help(client):
 	client.send('leave room (room name) --leave room\n\n'.encode())
 	client.send('list members (room name) --list members of a certain room\n\n'.encode())
 	client.send('send (room name) "message" --send a message to a certain room\n\n'.encode())
-	client.send('join multiple (roomlist) --join multiple rooms at once. rooms are seperated by a comma.\nEx: join multiple room1,room2,room3 \n\n')
-	client.send('send multiple (roomlist) "message"--send to multiple rooms at once. rooms are seperated by a comma.\nEx: send multiple multiple room1,room2,room3 "Hello rooms 1-3"\n\n')
+	client.send('join multiple (roomlist) --join multiple rooms at once. rooms are seperated by a comma.\nEx: join multiple room1,room2,room3 \n\n'.encode())
+	client.send('send multiple (roomlist) "message"--send to multiple rooms at once. rooms are seperated by a comma.\nEx: send multiple multiple room1,room2,room3 "Hello rooms 1-3"\n\n'.encode())
+	client.send('private (username) "message"  --send a private message to a user\n\n'.encode())
 
 
 #command list
@@ -211,6 +233,9 @@ def handle(client):
 				msg = msg.group()
 				if args[0] == 'send':
 					sendRoom(args[1], msg, client)
+					continue
+				if args[0] == 'private':
+					privateMsg(args[1], msg, client)
 					continue
 
 			#join multiple rooms
