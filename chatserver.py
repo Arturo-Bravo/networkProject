@@ -34,6 +34,8 @@ def createRoom(name, client):
 		rooms[name] = []
 		rooms[name].append(client)
 		client.send("Created room {}".format(name).encode())
+		creator = joinedFlipped[client]
+		sending(f"Room {name} created by {creator}\n".encode(), client)
 
 
 def joinRoom(name, client):
@@ -178,12 +180,12 @@ singleCommands = {
 	'server help': help
 }
 
-#send message to all connected clients
+#send message to all connected clients message should already be encoded
 def broadcast(message):
 	for client in joinedFlipped:
 		client.send(message)
 
-#send message to all but the client that is sending
+#send message to all but the client that is sending message should already be encoded
 def sending(message, sender):
 	for client in joinedFlipped:
 		if client != sender:
