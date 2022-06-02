@@ -13,8 +13,6 @@ server.bind((host, port))
 server.listen()
 
 #client list
-nicknames = []
-
 #fast access by name
 joined = {}
 #access by client
@@ -156,7 +154,9 @@ def help(client):
 	client.send('join room (room name) --join room\n\n'.encode('ascii'))
 	client.send('leave room (room name) --leave room\n\n'.encode('ascii'))
 	client.send('list members (room name) --list members of a certain room\n\n'.encode('ascii'))
-	client.send('send (room name) "message" --list members of a certain room\n\n'.encode('ascii'))
+	client.send('send (room name) "message" --send a message to a certain room\n\n'.encode('ascii'))
+	client.send('join multiple (roomlist) --join multiple rooms at once. rooms are seperated by a comma.\nEx: join multiple room1,room2,room3 \n\n')
+	client.send('send multiple (roomlist) "message"--send to multiple rooms at once. rooms are seperated by a comma.\nEx: send multiple multiple room1,room2,room3 "Hello rooms 1-3"\n\n')
 
 
 #command list
@@ -178,7 +178,7 @@ def broadcast(message):
 	for client in joinedFlipped:
 		client.send(message)
 
-#send message to all but 1 client
+#send message to all but the client that is sending
 def sending(message, sender):
 	for client in joinedFlipped:
 		if client != sender:
