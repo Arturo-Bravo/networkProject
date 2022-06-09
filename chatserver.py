@@ -103,10 +103,6 @@ def sendRoom(room, message, client):
 		client.send('You are not in this room.\n'.encode())
 		return
 	
-	#check if client is the only one in the room
-	if len(rooms[room]):
-		client.send(f'{room} is empty\n'.encode())
-		return
 
 	clientName = joinedFlipped[client]
 	message = clientName+ ' to ' + room + ':' + message
